@@ -11,62 +11,63 @@ const usersMainWrapperEl = document.querySelector(".users_cards_btn_wrapper");
 const usersWrapperEl = document.querySelector(".users_wrapper");
 
 
+const xhr = new XMLHttpRequest();
 const getPostsData = () => {
     return new Promise((res, rej) => {
-        const xhr = new XMLHttpRequest();
         xhr.addEventListener("readystatechange", () => {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                res(renderPostsData(JSON.parse(xhr.response)));
-            } else {
-                rej("Oops, something went wrong")
+                res(JSON.parse(xhr.response));
+            } else if (xhr.readyState === 4) {
+                rej("Ooops, something went wrong!")
             }
         })
-        xhr.open("GET", `${URL}/posts?_limit=20`);
+        xhr.open("GET", `${URL}/posts?_limit=15`);
         xhr.send();
     })
 }
 getPostsData()
     .then((res) => {
-        console.log(res);
+        renderPostsData(res);
     })
     .catch((err) => {
         console.log(err);
     })
 
+
 const getCommentsData = async () => {
-    try {
-        const responseComments = await fetch(`${URL}/comments?_limit=50`);
-        const dataComments = responseComments.json();
-        dataComments.then((result) => {
-            renderCommentsData(result);
-        }).catch((err) => {
-            console.log(err);
-        });
-    } catch (err) {
-        console.log(err);
-    }
+    return new Promise((res, rej) => {
+        xhr.addEventListener("readystatechange", () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                res(JSON.parse(xhr.response));
+            } else if (xhr.readyState === 4) {
+                rej("Ooops, something went wrong!")
+            }
+        })
+        xhr.open("GET", `${URL}/comments?_limit=15`);
+        xhr.send();
+    })
 }
 
 
 const getUsersData = async () => {
-    try {
-        const responseUsers = await fetch(`${URL}/users`);
-        const dataUsers = responseUsers.json();
-        dataUsers.then((result) => {
-            renderUsersData(result);
-        }).catch((err) => {
-            console.log(err);
+    return new Promise((res, rej) => {
+        xhr.addEventListener("readystatechange", () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                res(JSON.parse(xhr.response))
+            } else if (xhr.readyState === 4) {
+                rej("Ooops, something went wrong!")
+            }
         })
-    } catch (err) {
-        console.log(err);
-    }
+        xhr.open("GET", `${URL}/users`);
+        xhr.send();
+    })
 }
 
 
 
 const renderPostsData = (data) => {
     const fragment = document.createDocumentFragment()
-    data.forEach((item, index) => {
+    data.forEach((item) => {
         const images = ["https://images.uzum.uz/ctfvjir4nkds9ma10a0g/t_product_540_high.jpg",
             "https://images.uzum.uz/csq9cjtpq3ggq63d1rog/t_product_540_high.jpg",
             "https://images.uzum.uz/ccjab135a95unf11ni90/t_product_540_high.jpg",
@@ -121,7 +122,13 @@ const renderPostsData = (data) => {
 
     const postsSeeMoreBtnEl = document.querySelector(".posts_see_more_btn");
     postsSeeMoreBtnEl.addEventListener("click", () => {
-        getCommentsData();
+        getCommentsData()
+            .then((res) => {
+                renderCommentsData(res);
+            })
+            .catch((err) => {
+                console.log(err);
+            })
         postsSeeMoreBtnEl.style.display = "none";
         commentsSectionEl.style.display = "block";
     })
@@ -129,7 +136,7 @@ const renderPostsData = (data) => {
 
 const renderCommentsData = (data) => {
     const fragment = document.createDocumentFragment()
-    data.forEach((item, index) => {
+    data.forEach((item) => {
         const images = ["https://images.uzum.uz/ctfvjir4nkds9ma10a0g/t_product_540_high.jpg",
             "https://images.uzum.uz/csq9cjtpq3ggq63d1rog/t_product_540_high.jpg",
             "https://images.uzum.uz/ccjab135a95unf11ni90/t_product_540_high.jpg",
@@ -183,16 +190,21 @@ const renderCommentsData = (data) => {
     commentsMainWrapperEl.appendChild(newCommentsSeeMoreBtnEl);
 
     newCommentsSeeMoreBtnEl.addEventListener("click", () => {
-        getUsersData();
+        getUsersData()
+            .then(res => {
+                renderUsersData(res);
+            })
+            .catch(err => {
+                console.log(err);
+            })
         usersSectionEl.style.display = "block";
         newCommentsSeeMoreBtnEl.style.display = "none";
     })
-
 }
 
 const renderUsersData = (data) => {
-    const fragment = document.createDocumentFragment()
-    data.forEach((item, index) => {
+    const fragment = document.createDocumentFragment();
+    data.forEach((item) => {
         const images = ["https://images.uzum.uz/ctfvjir4nkds9ma10a0g/t_product_540_high.jpg",
             "https://images.uzum.uz/csq9cjtpq3ggq63d1rog/t_product_540_high.jpg",
             "https://images.uzum.uz/ccjab135a95unf11ni90/t_product_540_high.jpg",
@@ -244,14 +256,5 @@ const renderUsersData = (data) => {
     })
 
     usersWrapperEl.appendChild(fragment);
-    const newUsersSeeLessBtnEl = document.createElement("button");
-    newUsersSeeLessBtnEl.classList.add("users_see_less_btn");
-    newUsersSeeLessBtnEl.innerHTML = "Orqaga qaytish";
-    usersMainWrapperEl.appendChild(newUsersSeeLessBtnEl);
-
-    newUsersSeeLessBtnEl.addEventListener("click", () => {
-        commentsSectionEl.style.display = "none";
-        usersSectionEl.style.display = "none";
-    })
 }
 
