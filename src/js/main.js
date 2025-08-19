@@ -11,23 +11,27 @@ const usersMainWrapperEl = document.querySelector(".users_cards_btn_wrapper");
 const usersWrapperEl = document.querySelector(".users_wrapper");
 
 
-const getPostsData = async () => {
-    try {
-        const responsePosts = await fetch(`${URL}/posts?_limit=20`);
-        const dataPosts = responsePosts.json();
-        dataPosts.then((result) => {
-            renderPostsData(result);
-        }).catch((err) => {
-            console.log(err);
-        });
-
-    } catch (err) {
-        console.error(err);
-    }
+const getPostsData = () => {
+    return new Promise((res, rej) => {
+        const xhr = new XMLHttpRequest();
+        xhr.addEventListener("readystatechange", () => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                res(renderPostsData(JSON.parse(xhr.response)));
+            } else {
+                rej("Oops, something went wrong")
+            }
+        })
+        xhr.open("GET", `${URL}/posts?_limit=20`);
+        xhr.send();
+    })
 }
-window.onload = () => {
-    getPostsData();
-}
+getPostsData()
+    .then((res) => {
+        console.log(res);
+    })
+    .catch((err) => {
+        console.log(err);
+    })
 
 const getCommentsData = async () => {
     try {
@@ -42,6 +46,8 @@ const getCommentsData = async () => {
         console.log(err);
     }
 }
+
+
 const getUsersData = async () => {
     try {
         const responseUsers = await fetch(`${URL}/users`);
